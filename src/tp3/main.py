@@ -6,7 +6,7 @@ def main():
     logger.info("Starting TP3")
 
     ip = "31.220.95.27:9002"
-    challenges = {"1": f"http://{ip}/captcha1/"}
+    challenges = {"1": f"http://{ip}/captcha1/", "2": f"http://{ip}/captcha2/"}
 
     for i in challenges:
         url = challenges[i]
