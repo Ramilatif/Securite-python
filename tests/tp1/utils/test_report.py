@@ -1,4 +1,4 @@
-from unittest.mock import patch, mock_open, MagicMock
+from unittest.mock import patch, MagicMock
 from src.tp1.utils.report import Report
 
 
@@ -36,40 +36,49 @@ def test_concat_report():
 
 def test_save():
     # Given
-    report = Report(MagicMock(), "test.pdf", "Test summary")
+    capture = MagicMock()
+    report = Report(capture, "test.pdf", "Test summary")
     report.title = "Test Title"
 
-    # When/Then
-    with patch("builtins.open", mock_open()) as mock_file:
+    # When
+    with patch("src.tp1.utils.report.FPDF") as mock_pdf_class:
+        mock_pdf = MagicMock()
+        mock_pdf_class.return_value = mock_pdf
         report.save("test.pdf")
 
-        # Verify file was opened with correct name
-        mock_file.assert_called_once_with("test.pdf", "w")
-
-        # Verify write was called with the concatenated content
-        mock_file().write.assert_called_once_with("Test TitleTest summary")
+    # Then
+    mock_pdf.output.assert_called_once_with("test.pdf")
 
 
 def test_generate_graph():
     # Given
-    report = Report(MagicMock(), "test.pdf", "Test summary")
+    capture = MagicMock()
+    capture.packets = []
+    report = Report(capture, "test.pdf", "Test summary")
 
     # When
-    report.generate("graph")
+    with patch("src.tp1.utils.report.pygal.Bar") as mock_bar_class:
+        mock_bar = MagicMock()
+        mock_bar_class.return_value = mock_bar
+        report.generate("graph")
 
     # Then
-    assert report.graph == ""  # Currently returns empty string
+    assert report.graph.endswith("protocols_chart.svg")
+    mock_bar.render_to_file.assert_called_once_with(report.graph)
 
 
 def test_generate_array():
     # Given
-    report = Report(MagicMock(), "test.pdf", "Test summary")
+    capture = MagicMock()
+    capture.packets = []
+    report = Report(capture, "test.pdf", "Test summary")
 
     # When
     report.generate("array")
 
     # Then
-    assert report.array == ""  # Currently returns empty string
+    assert "Protocole" in report.array
+    assert "Source IP" in report.array
 
 
 def test_generate_invalid_param():

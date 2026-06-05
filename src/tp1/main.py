@@ -1,6 +1,7 @@
 from tp1.utils.capture import Capture
-from tp1.utils.config import logger
+from tp1.utils.config import logger, DOC_DIR
 from tp1.utils.report import Report
+from scapy.all import *
 
 
 def main():
@@ -11,7 +12,7 @@ def main():
     capture.analyse("tcp")
     summary = capture.get_summary()
 
-    filename = "report.pdf"
+    filename = str(DOC_DIR / "report.pdf")
     report = Report(capture, filename, summary)
     report.generate("graph")
     report.generate("array")

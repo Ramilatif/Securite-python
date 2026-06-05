@@ -1,17 +1,21 @@
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from src.tp1.utils.capture import Capture
 
 
-def test_capture_init():
+@patch("src.tp1.utils.capture.choose_interface", return_value="eth0")
+def test_capture_init(mock_choose):
     # When
     capture = Capture()
 
     # Then
-    assert capture.interface == ""
+    assert capture.interface == "eth0"
     assert capture.summary == ""
+    assert capture.packets == []
 
 
-def test_given_capture_when_capture_traffic_then_interface_is_set():
+@patch("src.tp1.utils.capture.choose_interface", return_value="eth0")
+@patch("src.tp1.utils.capture.sniff", return_value=[MagicMock()])
+def test_given_capture_when_capture_traffic_then_packets_stored(mock_sniff, mock_choose):
     # Given
     capture = Capture()
 
@@ -19,11 +23,12 @@ def test_given_capture_when_capture_traffic_then_interface_is_set():
     capture.capture_traffic()
 
     # Then
-    # This is a minimal test since the method doesn't do much yet
-    assert capture.interface == ""
+    assert len(capture.packets) == 1
+    mock_sniff.assert_called_once_with(iface="eth0", count=20)
 
 
-def test_sort_network_protocols():
+@patch("src.tp1.utils.capture.choose_interface", return_value="")
+def test_sort_network_protocols_empty_packets(mock_choose):
     # Given
     capture = Capture()
 
@@ -31,10 +36,11 @@ def test_sort_network_protocols():
     result = capture.sort_network_protocols()
 
     # Then
-    assert result == ""  # Method currently returns None
+    assert result == "{}"
 
 
-def test_get_all_protocols():
+@patch("src.tp1.utils.capture.choose_interface", return_value="")
+def test_get_all_protocols_empty_packets(mock_choose):
     # Given
     capture = Capture()
 
@@ -42,10 +48,11 @@ def test_get_all_protocols():
     result = capture.get_all_protocols()
 
     # Then
-    assert result == ""  # Method currently returns None
+    assert result == "{}"
 
 
-def test_analyse():
+@patch("src.tp1.utils.capture.choose_interface", return_value="")
+def test_analyse(mock_choose):
     # Given
     capture = Capture()
 
@@ -65,7 +72,8 @@ def test_analyse():
     assert capture.summary == "Test summary"
 
 
-def test_get_summary():
+@patch("src.tp1.utils.capture.choose_interface", return_value="")
+def test_get_summary(mock_choose):
     # Given
     capture = Capture()
     capture.summary = "Test summary"
@@ -77,7 +85,8 @@ def test_get_summary():
     assert result == "Test summary"
 
 
-def test_gen_summary():
+@patch("src.tp1.utils.capture.choose_interface", return_value="")
+def test_gen_summary_with_no_packets(mock_choose):
     # Given
     capture = Capture()
 
@@ -85,4 +94,5 @@ def test_gen_summary():
     result = capture._gen_summary()
 
     # Then
-    assert result == ""  # Method currently returns empty string
+    assert "0" in result  # 0 paquets capturés
+    assert "Résumé" in result
